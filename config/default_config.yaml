@@ -1,0 +1,39 @@
+﻿federated:
+  num_clients: 6
+  rounds: 20
+  local_epochs: 5
+  batch_size: 64
+  learning_rate: 0.001
+  weight_decay: 0.0001
+  aggregation: "FedAvg"
+
+model:
+  architecture: "1D-CNN"
+  input_dim: 35
+  conv1_filters: 64
+  conv1_kernel: 3
+  conv2_filters: 128
+  conv2_kernel: 3
+  pool_size: 2
+  dense_units: 64
+  dropout_rate: 0.4
+  num_classes: 7
+
+privacy:
+  enabled: true
+  epsilon: 1.0
+  delta: 1.0e-5
+  clip_threshold: 1.0
+  dual_layer_noise: true
+
+data:
+  cdfv_features: 35
+  smote_ratio: 0.33
+  test_split: 0.2
+  val_split: 0.1
+  random_seed: 42
+
+explainability:
+  num_background_samples: 100
+  num_explain_samples: 50
+  chifs_top_k: 8
