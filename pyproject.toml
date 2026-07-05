@@ -1,0 +1,37 @@
+﻿[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pf-daptiv"
+version = "1.0.0"
+description = "Privacy-Preserving Federated Framework for Multi-Stage APT Detection in Industrial IoT and Critical Infrastructure Networks"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+keywords = [
+    "federated-learning",
+    "advanced-persistent-threats",
+    "differential-privacy",
+    "intrusion-detection",
+    "1d-cnn",
+    "explainable-ai",
+    "shap",
+    "cybersecurity",
+    "iot-security"
+]
+dependencies = [
+    "torch>=2.0.0",
+    "numpy>=1.22.0",
+    "pandas>=1.5.0",
+    "scikit-learn>=1.2.0",
+    "scipy>=1.9.0",
+    "pyyaml>=6.0",
+    "shap>=0.42.0",
+    "matplotlib>=3.6.0",
+    "tqdm>=4.64.0"
+]
+
+[project.urls]
+Homepage = "https://github.com/nav6x/pf-daptiv"
+Repository = "https://github.com/nav6x/pf-daptiv.git"
