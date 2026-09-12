@@ -76,16 +76,16 @@ Industrial edge gateways and programmable logic controllers have limited process
 
 ![1D-CNN Architecture](assets/cnn_architecture.png)
 
-The neural network processes a 35-dimensional CDFV input vector through the following pipeline:
+The neural network processes a 35-dimensional CDFV input vector through the following pipeline (**corrected to match the actual default arguments of `APTClassifier1DCNN` in `src/models/cnn1d.py`** -- the previous version of this section described filter counts, dropout rate, and output size that didn't match the real model class):
 
-- Conv1D Layer 1: 32 filters, kernel size 3, stride 1, ReLU activation, and Batch Normalization.
+- Conv1D Layer 1: 64 filters, kernel size 3, stride 1, ReLU activation, and Batch Normalization.
 - MaxPool1D Layer 1: Pool size 2, stride 2, condensing the representation from 35 to 17 features.
-- Conv1D Layer 2: 64 filters, kernel size 3, stride 1, ReLU activation, and Batch Normalization.
+- Conv1D Layer 2: 128 filters, kernel size 3, stride 1, ReLU activation, and Batch Normalization.
 - MaxPool1D Layer 2: Pool size 2, stride 2, condensing the representation from 17 to 8 features.
-- Dense Layer: 128 units with ReLU activation and 30 percent dropout regularization.
-- Output Layer: 6 units with Softmax activation, generating class probabilities across the 6 APT stages.
+- Dense Layer: 64 units with ReLU activation and 40 percent dropout regularization.
+- Output Layer: 7 units with Softmax activation, generating class probabilities across the 7 APT stages (`APT_STAGES` in `src/data/cdfv_schema.py` runs 0-6, including Benign).
 
-Detailed mathematical dimensions and parameter counts are available in [Module 04: Edge 1D-CNN Architecture](docs/04_edge_1d_cnn_architecture.md).
+Detailed mathematical dimensions and parameter counts are available in [Module 04: Edge 1D-CNN Architecture](docs/04_edge_1d_cnn_architecture.md) -- that document has the same corrections applied.
 
 ---
 
@@ -171,35 +171,46 @@ Mathematical comparisons of composition methods appear in [Module 06: Differenti
 
 ## Architectural Module Ablation Analysis
 
-Ablation experiments quantify the performance contribution of each design component across benchmark traffic:
+**Not independently verified.** The figures below are the project's original narrative and have not been reproduced -- no ablation run isolating each component (local-only, clip-only, full pipeline) has actually been executed against real data. The real, measured numbers that do exist (centralized vs. FedAvg vs. PF-DAPTIV, across four real datasets) are in [Benchmark Performance Evaluation](#benchmark-performance-evaluation) below, and they contradict the "1.30% utility delta" framing implied here: on real data the federated pipeline loses far more than 1.30% relative to centralized, and on two datasets it is worse than random.
 
-![System Component Ablation Analysis](assets/ablation_study.png)
+- Baseline 1D-CNN (Local Only): Trains isolated client models with no parameter exchange (91.24% F1-score) -- unverified.
+- Centralized 1D-CNN: Gathers all raw telemetry onto one central server without privacy (97.45% F1-score) -- unverified.
+- FedAvg (No Privacy): Standard federated training without gradient clipping or noise (96.88% F1-score) -- unverified.
+- FedAvg + Clip Only: Adds $L_2$ gradient clipping without noise injection (96.42% F1-score) -- unverified.
+- PF-DAPTIV (Full Pipeline): Combines FedAvg, $L_2$ norm clipping, and calibrated Gaussian noise (95.58% F1-score) -- unverified.
 
-- Baseline 1D-CNN (Local Only): Trains isolated client models with no parameter exchange (91.24% F1-score).
-- Centralized 1D-CNN: Gathers all raw telemetry onto one central server without privacy (97.45% F1-score).
-- FedAvg (No Privacy): Standard federated training without gradient clipping or noise (96.88% F1-score).
-- FedAvg + Clip Only: Adds $L_2$ gradient clipping without noise injection (96.42% F1-score).
-- PF-DAPTIV (Full Pipeline): Combines FedAvg, $L_2$ norm clipping, and calibrated Gaussian noise (95.58% F1-score).
-
-The complete architecture achieves 95.58% F1-score, preserving detection quality within 1.30% of non-private federated learning while maintaining rigorous mathematical privacy.
-
-Full ablation configurations are documented in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#architectural-ablation-analysis).
+See [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#architectural-ablation-analysis) for the same caveat in more detail.
 
 ---
 
 ## Benchmark Performance Evaluation
 
-PF-DAPTIV underwent evaluation across five cybersecurity benchmark datasets representing enterprise corporate networks, industrial IoT infrastructures, and real-world APT campaigns:
+**All results below are measured, not narrated** -- reproduced with [`scripts/run_real_benchmark.py`](scripts/run_real_benchmark.py) against the real, publicly downloaded datasets (not the synthetic corpus used elsewhere in this repo's test suite). Methodology: a stratified ~80,000-row sample per dataset (80/20 train/test split), 3 simulated clients, 15 federated rounds, 2 local epochs per round. A previously listed fifth dataset ("UAPD") has been removed entirely: no dataset under that name could be found published anywhere, and the repository never implemented a parser for it.
 
-![Benchmark Comparison](assets/benchmark_comparison.png)
+| Dataset | Setup | Binary Accuracy | Binary F1 | Multi-class Accuracy | Macro-F1 | MCC |
+|---|---|:---:|:---:|:---:|:---:|:---:|
+| UNSW-NB15 | Random Forest (centralized) | 94.70% | 96.13% | 89.57% | 62.41% | 0.879 |
+| UNSW-NB15 | 1D-CNN (centralized, upper bound) | 89.52% | 92.47% | 80.16% | 48.19% | 0.757 |
+| UNSW-NB15 | FedAvg (no DP) | 54.09% | 50.42% | 44.77% | 17.52% | 0.312 |
+| UNSW-NB15 | PF-DAPTIV ($\epsilon=1.0$) | 67.66% | 80.45% | 36.86% | 9.99% | 0.076 |
+| CSE-CIC-IDS2018 | Random Forest (centralized) | 96.89% | 94.87% | 96.89% | 82.98% | 0.929 |
+| CSE-CIC-IDS2018 | 1D-CNN (centralized, upper bound) | 96.26% | 93.76% | 96.02% | 73.87% | 0.914 |
+| CSE-CIC-IDS2018 | FedAvg (no DP) | 69.59% | 38.97% | 60.98% | 22.69% | 0.221 |
+| CSE-CIC-IDS2018 | PF-DAPTIV ($\epsilon=1.0$) | 69.40% | 57.41% | 50.26% | 21.23% | 0.346 |
+| Edge-IIoTset | Random Forest (centralized) | 75.03% | 64.41% | 74.73% | 57.62% | 0.501 |
+| Edge-IIoTset | 1D-CNN (centralized, upper bound) | 65.99% | 40.76% | 65.70% | 33.13% | 0.328 |
+| Edge-IIoTset | FedAvg (no DP) | 48.37% | 32.94% | 38.84% | 14.70% | -0.081 |
+| Edge-IIoTset | PF-DAPTIV ($\epsilon=1.0$) | 50.16% | 36.60% | 38.92% | 14.76% | -0.038 |
+| DAPT2020 | Random Forest (centralized) | 92.79% | 84.83% | 92.19% | 52.35% | 0.803 |
+| DAPT2020 | 1D-CNN (centralized, upper bound) | 90.09% | 80.97% | 87.15% | 46.97% | 0.744 |
+| DAPT2020 | FedAvg (no DP) | 74.92% | 0.00% | 74.92% | 17.13% | 0.000 |
+| DAPT2020 | PF-DAPTIV ($\epsilon=1.0$) | 54.96% | 28.55% | 46.23% | 14.12% | -0.025 |
 
-| Dataset | Target Environment | Accuracy | Precision | Recall | F1-Score | FPR | MCC | AUC-ROC |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| CSE-CIC-IDS2018 | Enterprise Network LAN/WAN | 95.62% | 95.10% | 95.40% | 95.25% | 3.80% | 0.912 | 0.984 |
-| UNSW-NB15 | Hybrid Probing & Exploits | 95.63% | 95.30% | 95.50% | 95.40% | 3.90% | 0.913 | 0.985 |
-| Edge-IIoTset | Industrial IoT & Smart Factory | 96.11% | 95.80% | 96.00% | 95.90% | 3.50% | 0.922 | 0.987 |
-| DAPT2020 | Multi-Stage APT Campaign | 95.79% | 95.50% | 95.66% | 95.58% | 3.80% | 0.915 | 0.981 |
-| UAPD | Host & Network Audit Telemetry | 95.14% | 94.82% | 94.98% | 94.90% | 4.30% | 0.899 | 0.978 |
+The centralized baselines are real and mostly credible (Edge-IIoTset is weaker across every model because this particular CSV mirror is missing 2 of the 9 Wireshark fields the parser reads, leaving less usable signal; DAPT2020's macro-F1 is capped by two attack stages having only 106 and 12 training examples respectively -- a genuine class-imbalance limit of the dataset, not a bug).
+
+**The federated pipeline, however, is broken on every single dataset** -- on Edge-IIoTset and DAPT2020 it scores *below* random guessing (negative MCC), and FedAvg-no-DP collapsed to predicting one class outright on DAPT2020. Root cause, confirmed once and holding across all four datasets: `DifferentialPrivacyManager.clip_model_delta` clips the entire model's parameter update to L2-norm <= 1.0 by default, applied unconditionally regardless of whether DP is even enabled. A real local-epoch update has a natural norm around 13, so the clip discards roughly 92% of every legitimate training signal, every round, for every client -- independent of privacy noise. This is why FedAvg-no-DP performs about as badly as PF-DAPTIV throughout: the bottleneck is a miscalibrated clipping threshold, not differential privacy.
+
+Three further data-parsing bugs surfaced and were fixed during this evaluation: `CICIDS2018_LABEL_MAP` was missing the dataset's actual (misspelled) `"Infilteration"` label; CICFlowMeter's literal `Infinity` values in rate columns were poisoning min-max scaling with NaN; and one DAPT2020 source file (`enp0s3-pvt-thursday.pcap_Flow.csv`) ships with no header row at all and is excluded rather than silently mislabeled.
 
 Dataset characteristics and baseline model comparisons appear in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md) and [Benchmark Reference](docs/benchmarks.md).
 
@@ -207,68 +218,59 @@ Dataset characteristics and baseline model comparisons appear in [Module 08: Emp
 
 ## Global Federated Convergence Dynamics
 
-The global model achieves stable convergence within 15 to 20 aggregation rounds:
+**Measured**, from the actual 15-round training runs behind the [Benchmark Performance Evaluation](#benchmark-performance-evaluation) table above. Loss falls steadily but slowly for both FedAvg and PF-DAPTIV on every dataset -- consistent with the clipping bug (see above): the model is learning, just far too little per round.
 
-![Federated Convergence Trajectory](assets/federated_convergence.png)
+| Dataset | Setup | Round 1 loss | Round 15 loss |
+|---|---|:---:|:---:|
+| UNSW-NB15 | FedAvg (no DP) | 1.247 | 1.047 |
+| UNSW-NB15 | PF-DAPTIV | 1.252 | 1.043 |
+| CSE-CIC-IDS2018 | FedAvg (no DP) | 0.591 | 0.378 |
+| CSE-CIC-IDS2018 | PF-DAPTIV | 0.592 | 0.375 |
+| Edge-IIoTset | FedAvg (no DP) | 1.240 | 0.997 |
+| Edge-IIoTset | PF-DAPTIV | 1.238 | 1.005 |
+| DAPT2020 | FedAvg (no DP) | 1.221 | 0.949 |
+| DAPT2020 | PF-DAPTIV | 1.250 | 1.029 |
 
-Training loss decreases rapidly during the first 5 rounds as local feature representations align across nodes. Validation accuracy across all five benchmark datasets remains steady through later rounds, confirming that Gaussian noise injection does not disrupt optimization stability.
-
-Convergence traces and loss histories are provided in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#federated-convergence-dynamics).
+Loss trending down does **not** mean the model is converging to something useful -- see the actual classification metrics in the benchmark table, several of which are at or below random guessing despite this steady loss decline. Full per-round histories are saved in `results_*.json` from `scripts/run_real_benchmark.py`.
 
 ---
 
 ## Multiclass ROC Discrimination
 
-The model separates normal traffic from individual attack phases with high reliability:
+**Not independently verified.** Per-class ROC/AUC was never computed against real data in this evaluation (the real-benchmark script reports accuracy/F1/MCC, not per-class ROC curves). Given the actual macro-F1 and MCC scores above -- several near or below zero -- the AUC values below are almost certainly not achievable and should be treated as unverified narrative pending an actual run.
 
-![Multiclass ROC Curves](assets/roc_curves.png)
-
-Area Under the ROC Curve (AUC-ROC) metrics range from 0.978 for low-footprint Command and Control beacons to 0.992 for high-volume Reconnaissance scans. Low False Positive Rates (3.50% to 4.30%) prevent false alerts from overwhelming control room personnel.
-
-Additional ROC evaluations appear in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#multiclass-discrimination).
+- ~~Area Under the ROC Curve (AUC-ROC) metrics range from 0.978 for low-footprint Command and Control beacons to 0.992 for high-volume Reconnaissance scans. Low False Positive Rates (3.50% to 4.30%) prevent false alerts from overwhelming control room personnel.~~
 
 ---
 
 ## Stage Classification Confusion Matrix
 
-The normalized confusion matrix illustrates classification accuracy across each attack phase:
+**Measured** -- the raw confusion matrix from the centralized 1D-CNN's real CSE-CIC-IDS2018 run (rows = true stage, columns = predicted; stages with zero support in this dataset's label mapping are omitted):
 
-![Normalized Stage Confusion Matrix](assets/stage_confusion_matrix.png)
+| True \ Pred | Benign | S2: Init. Compromise | S3: Foothold | S4: Lateral Movement |
+|---|:---:|:---:|:---:|:---:|
+| Benign | 10,897 | 23 | 14 | 0 |
+| S2: Initial Compromise | 1 | 2,534 | 0 | 0 |
+| S3: Foothold Establishment | 4 | 0 | 1,932 | 0 |
+| S4: Lateral Movement | **557** | 7 | 31 | **0** |
 
-Normal operational traffic achieves 97.2% recognition accuracy. Reconnaissance and Exfiltration stages exceed 95% accuracy because their volume and packet rate patterns differ sharply from baseline traffic. Delivery and Installation stages show limited mutual misclassification (2.1% to 2.8%) due to shared payload staging behavior on active connections.
-
-Analysis of misclassification patterns is available in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#confusion-matrix-analysis).
+Benign, Initial Compromise and Foothold are all recognized well (>99%). But **Lateral Movement (mapped from the dataset's Infiltration label) is never once correctly classified** -- 557 of 595 real lateral-movement flows (94%) are predicted as Benign outright. For a system whose entire premise is detecting multi-stage APT progression, missing lateral movement essentially completely is a significant, genuine finding, not a minor caveat.
 
 ---
 
 ## Feature Explainability (SHAP and CHIFS)
 
-Industrial engineers require clear explanations before altering physical machinery in response to an alert. PF-DAPTIV uses SHAP (SHapley Additive exPlanations) and CHIFS (Cross-Host Importance Feature Selection) to identify which telemetry features triggered a classification:
-
-![SHAP Feature Importance](assets/shap_feature_importance.png)
-
-The analysis identifies primary indicators for each attack phase:
-
-- Reconnaissance: Packet transmission rate (`flow_packets_per_sec`) and SYN flag counts (`syn_flag_count`).
-- Weaponization: Shannon payload entropy (`src_port_entropy`) and payload size variance.
-- Command and Control: Inter-arrival time standard deviation (`fwd_iat_std`) and jitter.
-- Exfiltration: Backward payload volume (`total_bwd_bytes`) and downlink-to-uplink byte ratios (`down_up_ratio`).
-
-Mathematical formulas for feature attribution appear in [Module 07: Explainability and Attribution](docs/07_explainability_and_attribution.md).
+**Not independently verified, and internally inconsistent with the actual code.** `SHAPExplainer` exists in `src/explainability/shap_explainer.py` and is covered by a unit test on synthetic data, but was never run against any of the four real datasets for this evaluation. Worse: the named features below (`flow_packets_per_sec`, `src_port_entropy`, `syn_flag_count`, `fwd_iat_std`, `total_bwd_bytes`, `down_up_ratio`) **do not match any of the 35 actual feature names** in `src/data/cdfv_schema.py` (the real names are `fwd_pkts_per_sec`, `syn_flag_cnt`, etc. -- there is no `src_port_entropy` or `total_bwd_bytes` field in the schema at all). This section was fabricated wholesale and should not be relied on until a real SHAP run against real CDFV output is done and reported.
 
 ---
 
 ## Privacy-Utility Pareto Frontier
 
-Deployment sites require different balances between privacy protection and detection precision:
+**Not independently verified.** This evaluation only compared two points -- no DP ($\epsilon=0$) vs. $\epsilon=1.0$ -- not the five-point sweep implied below, and per the [Benchmark Performance Evaluation](#benchmark-performance-evaluation) table, the actual utility cost at $\epsilon=1.0$ is far larger than "1.30%" on every real dataset (in two cases the federated model is worse than random regardless of $\epsilon$). Treat the specific curve below as unreproduced narrative.
 
-![Privacy Utility Trade-off](assets/privacy_utility_tradeoff.png)
-
-- High Privacy Setting ($\epsilon = 0.5$): Provides strong confidentiality for sensitive environments, maintaining 93.8% to 94.6% detection accuracy.
-- Balanced Setting ($\epsilon = 1.0$): Recommended default, providing formal mathematical privacy with 95.14% to 96.11% accuracy.
-- Relaxed Privacy Setting ($\epsilon \ge 5.0$): Suitable when privacy rules are permissive, operating within 0.4% of non-private models.
-
-Trade-off curves and tuning recommendations are discussed in [Module 08: Empirical Benchmarks and Evaluation](docs/08_empirical_benchmarks_and_evaluation.md#privacy-utility-trade-off).
+- ~~High Privacy Setting ($\epsilon = 0.5$): Provides strong confidentiality for sensitive environments, maintaining 93.8% to 94.6% detection accuracy.~~
+- ~~Balanced Setting ($\epsilon = 1.0$): Recommended default, providing formal mathematical privacy with 95.14% to 96.11% accuracy.~~
+- ~~Relaxed Privacy Setting ($\epsilon \ge 5.0$): Suitable when privacy rules are permissive, operating within 0.4% of non-private models.~~
 
 ---
 

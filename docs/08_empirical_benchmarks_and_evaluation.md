@@ -2,9 +2,9 @@
 
 ---
 
-## 1. The Five Evaluated Benchmark Datasets
+## 1. The Four Evaluated Benchmark Datasets
 
-To ensure rigorous validation across diverse operating conditions, PF-DAPTIV was evaluated on five cybersecurity benchmark datasets:
+To ensure rigorous validation across diverse operating conditions, PF-DAPTIV was evaluated on four cybersecurity benchmark datasets:
 
 | Dataset | Target Environment | Primary Traffic Profiles | Records Evaluated |
 |---|---|---|---|
@@ -12,7 +12,6 @@ To ensure rigorous validation across diverse operating conditions, PF-DAPTIV was
 | UNSW-NB15 | Hybrid Synthetic & Live Traffic | Fuzzers, Backdoors, Exploits, Reconnaissance, Shellcode, Worms | 254,004 |
 | Edge-IIoTset | Industrial IoT & Smart Factory | Modbus Probing, TCP Floods, Injection, Ransomware, Exploits | 157,800 |
 | DAPT2020 | Multi-Stage APT Testbed | Reconnaissance, Foothold Staging, Lateral Movement, C2, Exfiltration | 120,450 |
-| UAPD | Host & Network Multi-Modal Logs | Advanced Persistent Threats, Lateral Traversal, Data Staging | 98,200 |
 
 ![Benchmark Comparison](../assets/benchmark_comparison.png)
 
@@ -39,83 +38,90 @@ $$
 
 ## 3. Quantitative Benchmark Results
 
-The following table compares PF-DAPTIV against the non-private federated baseline across all 5 benchmark datasets over 100 federated rounds:
+**Update:** the table below was originally fabricated -- no code in this repository had ever been run against any of these datasets. All four have since been re-measured for real using [`scripts/run_real_benchmark.py`](../scripts/run_real_benchmark.py) (stratified ~80,000-row sample per dataset, 80/20 split, 3 simulated clients, 15 federated rounds, 2 local epochs).
 
-| Dataset | Setup | Accuracy | Precision | Recall | F1-Score | FPR | MCC | AUC-ROC |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| CSE-CIC-IDS2018 | FedAvg (No DP) | 97.32% | 96.80% | 97.10% | 96.95% | 2.30% | 0.946 | 0.992 |
-| CSE-CIC-IDS2018 | PF-DAPTIV ($\epsilon=1.0$) | 95.62% | 95.10% | 95.40% | 95.25% | 3.80% | 0.912 | 0.984 |
-| UNSW-NB15 | FedAvg (No DP) | 98.06% | 97.80% | 98.00% | 97.90% | 1.80% | 0.961 | 0.996 |
-| UNSW-NB15 | PF-DAPTIV ($\epsilon=1.0$) | 95.63% | 95.30% | 95.50% | 95.40% | 3.90% | 0.913 | 0.985 |
-| Edge-IIoTset | FedAvg (No DP) | 96.81% | 96.50% | 96.70% | 96.60% | 2.90% | 0.936 | 0.993 |
-| Edge-IIoTset | PF-DAPTIV ($\epsilon=1.0$) | 96.11% | 95.80% | 96.00% | 95.90% | 3.50% | 0.922 | 0.987 |
-| DAPT2020 | FedAvg (No DP) | 97.12% | 96.88% | 97.02% | 96.95% | 2.48% | 0.943 | 0.994 |
-| DAPT2020 | PF-DAPTIV ($\epsilon=1.0$) | 95.79% | 95.50% | 95.66% | 95.58% | 3.80% | 0.915 | 0.981 |
-| UAPD | FedAvg (No DP) | 96.54% | 96.22% | 96.38% | 96.30% | 2.95% | 0.930 | 0.991 |
-| UAPD | PF-DAPTIV ($\epsilon=1.0$) | 95.14% | 94.82% | 94.98% | 94.90% | 4.30% | 0.899 | 0.978 |
+| Dataset | Setup | Binary Accuracy | Binary F1 | Multi-class Accuracy | Macro-F1 | MCC |
+|---|---|:---:|:---:|:---:|:---:|:---:|
+| UNSW-NB15 | Random Forest (centralized) | 94.70% | 96.13% | 89.57% | 62.41% | 0.879 |
+| UNSW-NB15 | 1D-CNN (centralized, upper bound) | 89.52% | 92.47% | 80.16% | 48.19% | 0.757 |
+| UNSW-NB15 | FedAvg (No DP) | 54.09% | 50.42% | 44.77% | 17.52% | 0.312 |
+| UNSW-NB15 | PF-DAPTIV ($\epsilon=1.0$) | 67.66% | 80.45% | 36.86% | 9.99% | 0.076 |
+| CSE-CIC-IDS2018 | Random Forest (centralized) | 96.89% | 94.87% | 96.89% | 82.98% | 0.929 |
+| CSE-CIC-IDS2018 | 1D-CNN (centralized, upper bound) | 96.26% | 93.76% | 96.02% | 73.87% | 0.914 |
+| CSE-CIC-IDS2018 | FedAvg (No DP) | 69.59% | 38.97% | 60.98% | 22.69% | 0.221 |
+| CSE-CIC-IDS2018 | PF-DAPTIV ($\epsilon=1.0$) | 69.40% | 57.41% | 50.26% | 21.23% | 0.346 |
+| Edge-IIoTset | Random Forest (centralized) | 75.03% | 64.41% | 74.73% | 57.62% | 0.501 |
+| Edge-IIoTset | 1D-CNN (centralized, upper bound) | 65.99% | 40.76% | 65.70% | 33.13% | 0.328 |
+| Edge-IIoTset | FedAvg (No DP) | 48.37% | 32.94% | 38.84% | 14.70% | -0.081 |
+| Edge-IIoTset | PF-DAPTIV ($\epsilon=1.0$) | 50.16% | 36.60% | 38.92% | 14.76% | -0.038 |
+| DAPT2020 | Random Forest (centralized) | 92.79% | 84.83% | 92.19% | 52.35% | 0.803 |
+| DAPT2020 | 1D-CNN (centralized, upper bound) | 90.09% | 80.97% | 87.15% | 46.97% | 0.744 |
+| DAPT2020 | FedAvg (No DP) | 74.92% | 0.00% | 74.92% | 17.13% | 0.000 |
+| DAPT2020 | PF-DAPTIV ($\epsilon=1.0$) | 54.96% | 28.55% | 46.23% | 14.12% | -0.025 |
 
-Under calibrated differential privacy ($\epsilon = 1.0, \delta = 10^{-5}$), the utility reduction is only 0.70% to 2.43% relative to unperturbed training, while providing formal privacy protection.
+The real results show the federated pipeline performing far below the centralized baselines and far below what was originally (falsely) claimed -- on Edge-IIoTset and DAPT2020 it scores *below random guessing* (negative MCC), and FedAvg-no-DP collapsed outright to a single-class predictor on DAPT2020. Root cause, confirmed consistently across all four datasets: `DifferentialPrivacyManager.clip_model_delta` clips the entire model's parameter update to L2-norm <= 1.0 by default, applied unconditionally regardless of whether DP is enabled. A real local-epoch update has a natural norm around 13, so the clip destroys roughly 92% of the legitimate training signal every round -- independent of privacy noise. This is why FedAvg-no-DP and PF-DAPTIV score similarly poorly throughout.
+
+Three further data-parsing bugs surfaced and were fixed during this evaluation: `CICIDS2018_LABEL_MAP` was missing the dataset's actual (misspelled) `"Infilteration"` label; CICFlowMeter's literal `Infinity` values in rate columns were poisoning min-max scaling with NaN; and one DAPT2020 source file (`enp0s3-pvt-thursday.pcap_Flow.csv`) ships with no header row at all and is excluded rather than silently mislabeled. Edge-IIoTset's weaker centralized scores reflect a genuine limitation of this CSV mirror (2 of the 9 Wireshark fields the parser reads have no equivalent column here), and DAPT2020's low macro-F1 reflects real, severe class imbalance (two attack stages have only 106 and 12 training examples) -- both are properties of the data, not bugs.
+
+Sections 4-7 below have now been reconciled against real measurements where the data exists (4, 5, 6), and clearly marked unreproduced where it does not (part of 5, and 7).
 
 ---
 
 ## 4. Comparison Against Centralized and Local Baselines
 
-Evaluated on the multi-stage DAPT2020 benchmark dataset:
+**Replaced with measured DAPT2020 results** (the original table below claimed a "1D-CNN Local Client Only" and SVM/MLP baselines that were never run; this evaluation did not reproduce those specific configurations either, so they are omitted rather than left in place):
 
-| Model Architecture | Training Topology | Privacy Protection | F1-Score | False Positive Rate |
-|---|---|---|:---:|:---:|
-| Random Forest (100 Trees) | Centralized Pooled | None | 93.45% | 5.20% |
-| Support Vector Machine (RBF) | Centralized Pooled | None | 91.80% | 6.40% |
-| Multi-Layer Perceptron (MLP) | Centralized Pooled | None | 94.10% | 4.80% |
-| 1D-CNN (Centralized) | Centralized Pooled | None | 97.45% | 2.10% |
-| 1D-CNN (Local Client Only) | Isolated Edge Node | Local Isolation | 91.24% | 7.10% |
-| **PF-DAPTIV (Full Pipeline)** | **Federated Edge Nodes** | **$(\epsilon=1.0, \delta=10^{-5})$-DP** | **95.58%** | **3.80%** |
+| Model Architecture | Training Topology | Privacy Protection | Binary F1 | Macro-F1 | MCC |
+|---|---|---|:---:|:---:|:---:|
+| Random Forest (100 Trees) | Centralized Pooled | None | 84.83% | 52.35% | 0.803 |
+| 1D-CNN (Centralized) | Centralized Pooled | None | 80.97% | 46.97% | 0.744 |
+| FedAvg | Federated Edge Nodes | None | 0.00% | 17.13% | 0.000 |
+| **PF-DAPTIV (Full Pipeline)** | **Federated Edge Nodes** | **$(\epsilon=1.0, \delta=10^{-5})$-DP** | **28.55%** | **14.12%** | **-0.025** |
 
-The 1D-CNN architecture outperforms traditional classifiers (Random Forest, SVM, MLP) by extracting local temporal relationships across adjacent CDFV features. Isolated local models achieve only 91.24% F1-score due to limited attack exposure, whereas PF-DAPTIV reaches 95.58% without data sharing.
+Centralized models substantially outperform both federated variants on real DAPT2020 data. PF-DAPTIV does not "reach 95.58% without data sharing" as the original claim stated -- its measured MCC of -0.025 means it performs indistinguishably from random guessing.
 
 ---
 
 ## 5. Convergence Trajectory and Multiclass Discrimination
 
-![Federated Convergence Trajectory](../assets/federated_convergence.png)
+**Convergence is measured**; ROC discrimination is not. Loss falls steadily across all 15 rounds for both FedAvg and PF-DAPTIV, on every dataset -- e.g. DAPT2020 FedAvg goes from 1.221 to 0.949, PF-DAPTIV from 1.250 to 1.029 (full per-round histories in `results_*.json`). This confirms the models are training, not stuck -- the clipping bug limits *how much* signal survives each round, not whether the optimizer is moving at all.
 
-The global model converges within 15 to 20 federated rounds. Initial training loss drops rapidly from 1.82 to 0.42 within the first 5 rounds.
+The multiclass ROC/AUC figures below were never computed against real data and are **not verified**:
 
-![Multiclass ROC Curves](../assets/roc_curves.png)
-
-Multiclass ROC curves confirm high discrimination across all stages:
-- Stage 1 (Reconnaissance): AUC = 0.992
-- Stage 2 (Weaponization): AUC = 0.985
-- Stage 3 (Delivery and Exploit): AUC = 0.988
-- Stage 4 (Installation): AUC = 0.981
-- Stage 5 (Command and Control): AUC = 0.978
-- Stage 6 (Actions and Exfiltration): AUC = 0.991
+- ~~Stage 1 (Reconnaissance): AUC = 0.992~~
+- ~~Stage 2 (Weaponization): AUC = 0.985~~
+- ~~Stage 3 (Delivery and Exploit): AUC = 0.988~~
+- ~~Stage 4 (Installation): AUC = 0.981~~
+- ~~Stage 5 (Command and Control): AUC = 0.978~~
+- ~~Stage 6 (Actions and Exfiltration): AUC = 0.991~~
 
 ---
 
 ## 6. Confusion Matrix Analysis
 
-![Normalized Stage Confusion Matrix](../assets/stage_confusion_matrix.png)
+**Measured** -- real confusion matrix from the centralized 1D-CNN's CSE-CIC-IDS2018 run:
 
-- Normal Traffic: 97.2% recognition rate.
-- Reconnaissance: 95.8% recognition rate.
-- Exfiltration: 96.1% recognition rate.
-- Delivery vs. Installation: Mutual misclassification of 2.1% to 2.8% occurs because both phases involve active payload staging over established sessions.
+| True \ Pred | Benign | S2: Init. Compromise | S3: Foothold | S4: Lateral Movement |
+|---|:---:|:---:|:---:|:---:|
+| Benign | 10,897 | 23 | 14 | 0 |
+| S2: Initial Compromise | 1 | 2,534 | 0 | 0 |
+| S3: Foothold Establishment | 4 | 0 | 1,932 | 0 |
+| S4: Lateral Movement | 557 | 7 | 31 | 0 |
+
+Benign, Initial Compromise and Foothold recognize well (>99%), but Lateral Movement (the dataset's Infiltration label) is **never once correctly classified** -- 94% of real lateral-movement flows are predicted Benign. This is a genuine, significant finding for a system whose stated purpose is multi-stage APT detection, and directly contradicts the original claim's "97.2% Normal Traffic" / "95.8% Reconnaissance" framing, which used stage names this dataset's labels don't even produce.
 
 ---
 
 ## 7. Privacy-Utility Pareto Frontier
 
-![Privacy Utility Trade-off](../assets/privacy_utility_tradeoff.png)
+**Not independently verified.** This evaluation compared exactly two points ($\epsilon=0$ vs. $\epsilon=1.0$), not the five-point sweep below, and the measured utility cost at $\epsilon=1.0$ (see Section 3 and Section 4) is far larger than "1.30%" on every real dataset -- in two cases the federated model scores below random regardless of $\epsilon$, meaning privacy noise isn't even the binding constraint. The table below remains unreproduced original narrative:
 
-| Privacy Budget ($\epsilon$) | Noise Scale ($\sigma$) | Privacy Level | Average F1-Score | Utility Delta |
-|---|---|---|:---:|:---:|
-| $\epsilon = 0.1$ | $\sigma = 48.448$ | Maximum Confidentiality | 89.20% | $-7.68\%$ |
-| $\epsilon = 0.5$ | $\sigma = 9.690$ | High Confidentiality | 93.85% | $-3.03\%$ |
-| $\epsilon = 1.0$ | $\sigma = 4.845$ | Balanced (Recommended) | 95.58% | $-1.30\%$ |
-| $\epsilon = 2.0$ | $\sigma = 2.422$ | Moderate Privacy | 96.35% | $-0.53\%$ |
-| $\epsilon = 5.0$ | $\sigma = 0.969$ | Relaxed Privacy | 96.65% | $-0.23\%$ |
-| Non-Private | $\sigma = 0.000$ | No Differential Privacy | 96.88% | $0.00\%$ |
+- ~~$\epsilon = 0.1$, $\sigma = 48.448$, Maximum Confidentiality, 89.20% F1, $-7.68\%$ delta~~
+- ~~$\epsilon = 0.5$, $\sigma = 9.690$, High Confidentiality, 93.85% F1, $-3.03\%$ delta~~
+- ~~$\epsilon = 1.0$, $\sigma = 4.845$, Balanced (Recommended), 95.58% F1, $-1.30\%$ delta~~
+- ~~$\epsilon = 2.0$, $\sigma = 2.422$, Moderate Privacy, 96.35% F1, $-0.53\%$ delta~~
+- ~~$\epsilon = 5.0$, $\sigma = 0.969$, Relaxed Privacy, 96.65% F1, $-0.23\%$ delta~~
+- ~~Non-Private, $\sigma = 0.000$, No DP, 96.88% F1, $0.00\%$ delta~~
 
 Setting $\epsilon = 1.0$ represents the optimal operational trade-off: strong mathematical confidentiality with only a 1.30% utility delta.
 

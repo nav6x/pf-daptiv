@@ -134,7 +134,7 @@ The Moments Accountant preserves privacy budget, permitting up to 100 training r
 ## 5. Frequently Asked Questions
 
 ### Q: Does adding random noise destroy the machine learning model accuracy?
-A: No. Because the noise has zero mean ($\mathbb{E}[\boldsymbol{\eta}] = 0$), sample-weighted federated averaging across multiple edge nodes cancels out random fluctuations. Model accuracy drops by only 1.30% compared to non-private federated learning.
+A: The zero-mean argument ($\mathbb{E}[\boldsymbol{\eta}] = 0$) for why averaging should cancel random fluctuations is theoretically sound, but the "1.30%" accuracy-drop figure previously cited here was never measured and has been removed. Real measurement (see [Module 08](08_empirical_benchmarks_and_evaluation.md)) found the DP-vs-no-DP gap to be small mainly because both are already badly degraded by an unrelated gradient-clipping bug (`clip_model_delta` clips to L2-norm <= 1.0 regardless of whether DP is even enabled) -- not because DP noise is harmless at scale.
 
 ### Q: What is the physical meaning of epsilon = 1.0?
 A: An $\epsilon = 1.0$ guarantee means that the presence or absence of any single network flow can alter the probability of any model outcome by at most a factor of $e^{1.0} \approx 2.718$. This prevents an attacker from conclusively proving whether a particular conversation occurred.

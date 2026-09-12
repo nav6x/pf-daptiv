@@ -76,7 +76,7 @@ In practice, network traffic is Non-IID (Not Independently and Identically Distr
 - Moderate Local Epochs ($E = 2$): Limits how far local client models drift from the global parameters before aggregation.
 
 ### Client Stragglers and Disconnections
-Industrial networks experience intermittent disconnections. The coordinator enforces a quorum rule: if 80 percent of clients submit updates within the timeout window, aggregation proceeds without waiting for delayed nodes.
+**Fabricated -- no such logic exists in the code.** `src/federated/server.py`'s `run_round()` synchronously calls `client.train_epoch()` on every client in `self.clients` with no timeout, no quorum threshold, and no handling of a client that fails to respond -- there is no straggler or disconnection tolerance implemented at all. This subsection should be treated as an unimplemented design idea, not a description of current behavior.
 
 ---
 

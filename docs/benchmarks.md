@@ -4,7 +4,7 @@
 
 ## 1. Benchmark Datasets Overview
 
-PF-DAPTIV was evaluated across five cybersecurity benchmark datasets:
+PF-DAPTIV was evaluated across four cybersecurity benchmark datasets:
 
 | Dataset | Target Environment | Evaluated Records | Primary Attack Classes |
 |---|---|---|---|
@@ -12,7 +12,6 @@ PF-DAPTIV was evaluated across five cybersecurity benchmark datasets:
 | UNSW-NB15 | Hybrid Synthetic and Live Traffic | 254,004 | Fuzzers, Backdoors, Exploits, Reconnaissance |
 | Edge-IIoTset | Industrial IoT and Smart Grid | 157,800 | Modbus Probing, TCP Floods, Injection, Exploits |
 | DAPT2020 | Multi-Stage APT Testbed | 120,450 | Reconnaissance, Foothold, Lateral, C2, Exfiltration |
-| UAPD | Host and Network Multi-Modal | 98,200 | Multi-Stage APTs, Data Staging, Traversal |
 
 ![Benchmark Comparison](../assets/benchmark_comparison.png)
 
@@ -20,20 +19,7 @@ PF-DAPTIV was evaluated across five cybersecurity benchmark datasets:
 
 ## 2. Quantitative Performance Summary
 
-Empirical results across 100 federated rounds with $\epsilon = 1.0, \delta = 10^{-5}, C = 1.0$:
-
-| Dataset | Evaluation Setting | Accuracy | Precision | Recall | F1-Score | FPR | MCC | AUC-ROC |
-|---|---|:---:|:---:|:---:|:---:|:---:|:---:|:---:|
-| CSE-CIC-IDS2018 | FedAvg (No DP) | 97.32% | 96.80% | 97.10% | 96.95% | 2.30% | 0.946 | 0.992 |
-| CSE-CIC-IDS2018 | PF-DAPTIV ($\epsilon=1.0$) | 95.62% | 95.10% | 95.40% | 95.25% | 3.80% | 0.912 | 0.984 |
-| UNSW-NB15 | FedAvg (No DP) | 98.06% | 97.80% | 98.00% | 97.90% | 1.80% | 0.961 | 0.996 |
-| UNSW-NB15 | PF-DAPTIV ($\epsilon=1.0$) | 95.63% | 95.30% | 95.50% | 95.40% | 3.90% | 0.913 | 0.985 |
-| Edge-IIoTset | FedAvg (No DP) | 96.81% | 96.50% | 96.70% | 96.60% | 2.90% | 0.936 | 0.993 |
-| Edge-IIoTset | PF-DAPTIV ($\epsilon=1.0$) | 96.11% | 95.80% | 96.00% | 95.90% | 3.50% | 0.922 | 0.987 |
-| DAPT2020 | FedAvg (No DP) | 97.12% | 96.88% | 97.02% | 96.95% | 2.48% | 0.943 | 0.994 |
-| DAPT2020 | PF-DAPTIV ($\epsilon=1.0$) | 95.79% | 95.50% | 95.66% | 95.58% | 3.80% | 0.915 | 0.981 |
-| UAPD | FedAvg (No DP) | 96.54% | 96.22% | 96.38% | 96.30% | 2.95% | 0.930 | 0.991 |
-| UAPD | PF-DAPTIV ($\epsilon=1.0$) | 95.14% | 94.82% | 94.98% | 94.90% | 4.30% | 0.899 | 0.978 |
+**Update:** this table was originally fabricated -- nothing in this repo had been run against any of these datasets. All four have since been re-measured for real via [`scripts/run_real_benchmark.py`](../scripts/run_real_benchmark.py); see [Module 08, Section 3](08_empirical_benchmarks_and_evaluation.md#3-quantitative-benchmark-results) for the full real numbers (binary accuracy/F1, multi-class accuracy, macro-F1, MCC) and the root-caused reason the federated results are far weaker than originally claimed, and on two datasets score below random guessing (an overly aggressive default gradient-clipping threshold, not privacy noise).
 
 ---
 

@@ -2,6 +2,10 @@
 
 ---
 
+**This document describes a fictional feature schema that does not match the actual code** -- see the same warning and details in [Module 03: CDFV Telemetry Schema](03_cdfv_telemetry_schema.md). The real 35 feature names live in `src/data/cdfv_schema.py`; none of the names below (`total_fwd_packets`, `flow_bytes_per_sec`, `syn_flag_count`, `dst_port_entropy`, etc.) exist there.
+
+---
+
 ## 1. Specification Overview
 
 The Canonical Distributed Feature Vector (CDFV) is an immutable 35-dimensional schema that provides a unified interface for industrial IoT and enterprise network telemetry.

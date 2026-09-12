@@ -29,6 +29,9 @@ checkpoints/
 *.pt
 *.pth
 
+data/
+results_*.json
+
 .vscode/
 .idea/
 *.swp

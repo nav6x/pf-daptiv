@@ -57,7 +57,9 @@ Where $\phi_i^{(k)}$ is the mean absolute Shapley value for feature $i$ computed
 
 ## 4. Stage-by-Stage Telemetry Indicators
 
-The empirical feature attribution analysis reveals which CDFV metrics dominate detection across the 6 APT stages:
+**Fabricated -- do not rely on this table.** `SHAPExplainer` was never run against real telemetry for this analysis, and the feature names below do not even exist in this codebase: the 35 real CDFV feature names are defined in `src/data/cdfv_schema.py` (e.g. `fwd_pkts_per_sec`, `syn_flag_cnt`, `dns_query_len`), while the table cites invented names like `flow_packets_per_sec`, `syn_flag_count`, `dst_port_entropy`, `modbus_exception_rate`, and `dnp3_abort_rate` that appear nowhere in the schema or anywhere else in the source tree. This table should be deleted or replaced with a real SHAP run's output; it is kept here struck through only for the record:
+
+~~The empirical feature attribution analysis reveals which CDFV metrics dominate detection across the 6 APT stages:~~
 
 | APT Attack Stage | Primary Predictive Telemetry Features | Physical Interpretation in Industrial Control Systems |
 |---|---|---|
@@ -76,10 +78,10 @@ The empirical feature attribution analysis reveals which CDFV metrics dominate d
 A: No. SHAP explanations are computed locally on client nodes or on the generalized global model using validation data. Raw training records are never exposed during attribution.
 
 ### Q: How quickly can an operator interpret a CHIFS explanation?
-A: Precomputed SHAP attribution graphs render in under 100 milliseconds, allowing control room displays to show the top 3 anomaly factors alongside every security alert.
+A: **Unverified** -- no latency benchmark for SHAP attribution rendering has been run in this repository. The "under 100 milliseconds" figure previously here was an unmeasured claim and has been removed pending an actual timed run.
 
 ---
 
 ## 6. Next Learning Module
 
-Proceed to [Module 08: Empirical Benchmarks and Evaluation](08_empirical_benchmarks_and_evaluation.md) to inspect experimental results across the 5 benchmark datasets.
+Proceed to [Module 08: Empirical Benchmarks and Evaluation](08_empirical_benchmarks_and_evaluation.md) to inspect experimental results across the 4 benchmark datasets.

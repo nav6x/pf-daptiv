@@ -100,7 +100,7 @@ A: True air gaps no longer exist in modern industry. Facilities require remote d
 A: Anonymization is easily broken. Correlating anonymized flow timestamps with external public records (such as shift schedules or utility power fluctuations) enables linkage attacks that re-identify facilities. Differential privacy provides mathematical protection that heuristic anonymization cannot.
 
 ### Q: How does local edge computation handle industrial network bandwidth limits?
-A: By training locally and transmitting only compressed model deltas, PF-DAPTIV consumes less than 300 kilobytes per communication round, avoiding bandwidth congestion on industrial fieldbus or cellular links.
+A: By training locally and transmitting only compressed model deltas, PF-DAPTIV consumes on the order of ~357 KB per client per communication round (see [Module 04](04_edge_1d_cnn_architecture.md#3-parameter-count-and-memory-footprint) for the real, recalculated parameter count -- an earlier "under 300 kilobytes" figure here was based on a smaller architecture than the code actually uses), still small enough to avoid bandwidth congestion on industrial fieldbus or cellular links.
 
 ---
 

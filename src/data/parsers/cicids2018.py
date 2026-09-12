@@ -15,6 +15,7 @@ CICIDS2018_LABEL_MAP = {
     "Brute Force -XSS": 2,
     "SQL Injection": 2,
     "Infiltration": 4,
+    "Infilteration": 4,  # official CSE-CIC-IDS2018 CSVs use this misspelling
     "Bot": 3,
     "DDOS attack-HOIC": 2,
     "DDOS attack-LOIC-UDP": 2,
@@ -34,7 +35,11 @@ def parse_cicids2018(df_or_path, max_rows: int = None) -> Tuple[np.ndarray, np.n
 
     def get_scaled(col_name: str, default=0.0):
         if col_name in df.columns:
-            vals = pd.to_numeric(df[col_name], errors="coerce").fillna(default).values
+            # CICFlowMeter emits literal "Infinity" for zero-duration flows
+            # in rate columns (e.g. Flow Pkts/s); left unhandled, min-max
+            # scaling divides inf by inf and poisons the feature with NaN.
+            vals = pd.to_numeric(df[col_name], errors="coerce")
+            vals = vals.replace([np.inf, -np.inf], np.nan).fillna(default).values
             min_v, max_v = np.min(vals), np.max(vals)
             if max_v > min_v:
                 return (vals - min_v) / (max_v - min_v)

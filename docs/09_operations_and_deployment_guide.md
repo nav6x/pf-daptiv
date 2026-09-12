@@ -82,30 +82,51 @@ python scripts/explain_model.py --top-k 8
 
 ## 3. Configuration Management
 
-System hyperparameter defaults are configured in `config/default_config.yaml`:
+System hyperparameter defaults are configured in `config/default_config.yaml`. **This section previously quoted a version of the file that did not match reality** (wrong filter counts, wrong round/epoch/batch-size defaults, and missing fields) -- below is the actual current content:
 
 ```yaml
 federated:
-  rounds: 15
   num_clients: 6
-  fraction_fit: 1.0
-  local_epochs: 2
-  batch_size: 32
+  rounds: 20
+  local_epochs: 5
+  batch_size: 64
   learning_rate: 0.001
-
-privacy:
-  epsilon: 1.0
-  delta: 0.00001
-  clip_norm: 1.0
+  weight_decay: 0.0001
+  aggregation: "FedAvg"
 
 model:
+  architecture: "1D-CNN"
   input_dim: 35
-  num_classes: 6
-  conv1_filters: 32
-  conv2_filters: 64
-  dense_units: 128
-  dropout_rate: 0.3
+  conv1_filters: 64
+  conv1_kernel: 3
+  conv2_filters: 128
+  conv2_kernel: 3
+  pool_size: 2
+  dense_units: 64
+  dropout_rate: 0.4
+  num_classes: 7
+
+privacy:
+  enabled: true
+  epsilon: 1.0
+  delta: 1.0e-5
+  clip_threshold: 1.0
+  dual_layer_noise: true
+
+data:
+  cdfv_features: 35
+  smote_ratio: 0.33
+  test_split: 0.2
+  val_split: 0.1
+  random_seed: 42
+
+explainability:
+  num_background_samples: 100
+  num_explain_samples: 50
+  chifs_top_k: 8
 ```
+
+Note the config file's own defaults (20 rounds, 5 local epochs, 6 clients) differ from the `--rounds 15 --clients 6 --local-epochs 2` example invocation in Workflow 2 above and from this evaluation's real benchmark methodology (15 rounds, 3 clients, 2 local epochs) -- none of these are wrong, they're just three different, inconsistently-documented defaults. Treat command-line flags as authoritative over either documented default.
 
 ---
 
@@ -114,7 +135,7 @@ model:
 When moving from local simulation to field deployment across physical industrial facilities:
 
 1. Communication Security: All communication between edge nodes and the central coordinator must use mutual TLS (mTLS) with client-side X.509 certificates.
-2. Network Latency: Because parameter updates are under 300 kilobytes, communication completes within seconds over standard industrial cellular (4G/5G) or plant Ethernet links.
+2. Network Latency: With the model's real ~91,399 parameters at float32, each parameter update is ~357 KB (see [Module 04](04_edge_1d_cnn_architecture.md#3-parameter-count-and-memory-footprint)) -- still small enough that communication completes within seconds over standard industrial cellular (4G/5G) or plant Ethernet links, but the previous "under 300 kilobytes" figure was based on the wrong (smaller) architecture and is now corrected.
 3. Edge Storage: Edge nodes retain only recent telemetry windows. Normalized CDFV vectors occupy less than 200 bytes per flow record, permitting months of local history on modest SSD storage.
 
 ---

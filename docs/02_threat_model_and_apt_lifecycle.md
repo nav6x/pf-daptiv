@@ -16,6 +16,8 @@ During early phases, attack traffic looks nearly indistinguishable from benign a
 
 PF-DAPTIV organizes network behaviors into 6 discrete, sequential stages. This structured taxonomy allows machine learning models to identify where an attacker currently operates within a network kill chain:
 
+**Note on feature names below:** the specific telemetry field names cited in parentheses (`flow_packets_per_sec`, `dst_port_entropy`, `fwd_packet_len_mean`, `psh_flag_count`, `http_error_ratio`, `init_win_bytes_fwd`, `rst_flag_count`, `fwd_iat_std`, `dns_query_rate`, `total_bwd_bytes`, `dnp3_abort_rate`) do not exist in the actual 35-feature CDFV schema (`src/data/cdfv_schema.py`) -- see the correction in [Module 03](03_cdfv_telemetry_schema.md). The stage descriptions and MITRE ATT&CK mappings themselves are general security concepts and not dependent on this codebase, but the parenthetical feature names should not be read as describing anything this code actually computes. (`num_classes=7` in the real model corresponds to Benign plus these same 6 stages, but the model was never trained or evaluated per-stage against real data with meaningful support for every stage -- see [Module 08](08_empirical_benchmarks_and_evaluation.md).)
+
 ### Stage 0: Normal Baseline Operations
 - Operational Context: Standard factory operations, regular polling cycles between human-machine interfaces (HMIs) and PLCs, automated database backups, and routine web browsing by operators.
 - Telemetry Signatures: Predictable packet inter-arrival times, low port entropy, zero Modbus exception responses, and balanced forward/backward byte distributions.

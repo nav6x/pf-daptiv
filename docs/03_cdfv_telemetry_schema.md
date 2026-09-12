@@ -2,6 +2,10 @@
 
 ---
 
+**This entire document describes a fictional feature schema that does not match the actual code.** The real 35 CDFV feature names are defined in `src/data/cdfv_schema.py` (`CDFV_FEATURE_NAMES`) and are things like `fwd_pkts_per_sec`, `ct_dst_src_ltm`, `tcp_ack_raw`, `mqtt_msgtype`, `c2_interval`, `beacon_rate`, `proc_creation_rate`, `auth_fail_cnt`, `registry_writes`, `pdi`, `bcv`, `pe`, `lhc`, `er`, `dt`. Not one of the 35 feature names below (`total_fwd_packets`, `flow_bytes_per_sec`, `syn_flag_count`, `dst_port_entropy`, `modbus_exception_rate`, `dnp3_abort_rate`, etc.) exists anywhere in the source tree, and several of the real schema's own abbreviated feature names (`pdi`, `bcv`, `pe`, `lhc`, `er`, `dt`) have no documented physical meaning at all in the codebase, so this document cannot be trusted as a description of what the code actually computes. It is left in place unmodified below so the discrepancy is visible, but should be treated as unreliable pending a real rewrite grounded in `src/data/cdfv_schema.py` and the actual parser implementations in `src/data/parsers/`.
+
+---
+
 ## 1. The Challenge of Telemetry Heterogeneity
 
 Industrial facilities generate telemetry in incompatible data formats. A facility might capture raw packet dumps using Wireshark, export flow summaries using Cisco NetFlow v9, record connection states using Zeek event engines, or log register reads via Modbus protocol analyzers.
